@@ -8,6 +8,7 @@ function App() {
     city: "",
   });
 
+  const [errors, setErrors] = useState([]);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -16,7 +17,25 @@ function App() {
 
   async function formSubmit(e) {
     e.preventDefault();
-    console.log(formData);
+
+    try {
+      const res = await fetch("http://localhost:3000/submitForm", {
+        method: "POST",
+        headers: { "Content-type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrors(data.errors); // Backend Errors
+      } else {
+        alert("✅ Form Submitted Successfull");
+        setErrors([]);
+      }
+    } catch (error) {
+      console.log("Fetching Data error", error);
+    }
   }
 
   return (
@@ -87,8 +106,8 @@ function App() {
             City
           </label>
           <select
-            name="city"
             id="city"
+            name="city"
             value={formData.city}
             onChange={handleChange}
             className="bg-gray-700 border border-gray-300 text-gray-100 text-sm rounded-lg block w-full p-2.5">
@@ -105,6 +124,15 @@ function App() {
           className="w-full cursor-pointer py-2.5 px-5 bg-blue-700 text-white font-medium rounded-lg text-sm hover:bg-blue-800">
           Submit
         </button>
+
+        {/* Backend Errors */}
+        {errors.length > 0 && (
+          <ul className="text-red-400 text-sm mt-5">
+            {errors.map((err, i) => (
+              <li key={i}>{err.msg}</li>
+            ))}
+          </ul>
+        )}
       </form>
     </div>
   );
