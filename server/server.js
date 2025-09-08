@@ -4,15 +4,31 @@ import cors from "cors";
 import { body, validationResult } from "express-validator";
 
 app.use(cors());
-app.use(express.json())
+app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 const validationRule = [
-  body("name").notEmpty().withMessage("Username is Required"),
-  body("email").isEmail().withMessage("Please Enter a valide Email Address"),
+  body("name")
+    .notEmpty()
+    .withMessage("Username is Required")
+    .trim()
+    .custom((value) => {
+      if (value === "admin") {
+        throw new Error("Username 'admin' is not allowed");
+      }
+      return true;
+    }),
+  body("email")
+    .isEmail()
+    .withMessage("Please Enter a valide Email Address")
+    .normalizeEmail(),
+
   body("password")
     .isLength({ min: 5, max: 10 })
-    .withMessage("Password must be 5 to 10 Digits."),
+    .withMessage("Password must be 5 to 10 Digits.")
+    .isStrongPassword()
+    .withMessage("Password Must be strong."),
+
   body("city")
     .notEmpty()
     .withMessage("City is required")
